@@ -6,11 +6,14 @@ pipeline {
       agent {
         docker {
           image 'maven:3.9-eclipse-temurin-25'
+          args '-v maven-repo:/root/.m2'
           reuseNode true
         }
       }
       steps {
-        sh 'mvn clean install'
+        retry(3) {
+          sh 'mvn -B -Dmaven.wagon.http.retryHandler.count=5 clean install -DskipTests'
+        }
       }
     }
     stage('Docker Build') {
